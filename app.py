@@ -110,6 +110,7 @@ def hide_dropdowns():
     group_dropdown.pack_forget()
 
 def show_dropdowns():
+    labelhasil.pack(pady=10)
     global model_dropdown, group_dropdown, classify_button
     labelklasifikasi.pack(pady=10)
     model_dropdown.pack(pady=10)
@@ -286,11 +287,11 @@ def on_model_selected(event):
     selected_model = model_var.get()
     print(f"Selected Model: {selected_model}")
 
-
-
-# Create a frame to hold the Treeview widget
-frame = ttk.Frame(root)
-frame.pack(expand=True, fill="both", pady=10)  # Added vertical padding
+# Label untuk teks 'Pilih Grup'
+label_text = tk.StringVar()
+label_text.set("hasil yang telah di jadikan tabel")
+labelhasil = tk.Label(root, textvariable=label_text)
+labelhasil.pack_forget()  # Sesuaikan sesuai kebutuhan
 
 # Label untuk teks 'Pilih Grup'
 label_text = tk.StringVar()
@@ -341,6 +342,9 @@ group_dropdown.pack_forget()  # initially hide the dropdown
 # Create a button for classification
 classify_button = ttk.Button(root, text="Classify", command=lambda: classify_messages())
 classify_button.pack_forget()
+# Create a frame to hold the Treeview widget
+frame = ttk.Frame(root)
+frame.pack(expand=True, fill="both", pady=10)  # Added vertical padding
 
 # Run the Tkinter main loop
 root.mainloop()
