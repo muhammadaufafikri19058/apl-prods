@@ -9,6 +9,7 @@ from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, StackingClassifier, VotingClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
+import pickle
 from sklearn.metrics import accuracy_score, classification_report
 from joblib import dump, load
 import os
@@ -24,15 +25,6 @@ root.geometry("800x600")
 # Placeholder for DataFrame and models
 df = None
 svm_model, rf_model, nb_model, knn_model, stacking_model, voting_model = None, None, None, None, None, None
-
-# Placeholder for selected group and CSV file paths
-selected_group = None
-group_csv_mapping = {
-    'Group 1': 'group1.csv',
-    'Group 2': 'group2.csv',
-    'Group 3': 'group3.csv',
-    'Group 4': 'group4.csv',
-}
 
 def load_and_display_dataset(file_path=None, chat_text=None):
     global df
@@ -165,69 +157,13 @@ def display_dataframe(dataframe):
     canvas.create_window((0, 0), window=tree, anchor="nw")
     tree.update_idletasks()
     canvas.config(scrollregion=canvas.bbox("all"))
-def train_model(selected_group, selected_model):
-    global df, svm_model, rf_model, nb_model, knn_model, stacking_model, voting_model
-
-    if df is not None:
-        # Filter DataFrame based on selected group
-        group_df= read_csv()
-
-
-        # Add a new column 'spamminess' based on your criteria (you need to define this)
-        # For example, you can set it to 1 if 'spam_auto' is 1, otherwise 0
-        group_df['spamminess'] = group_df['spam_auto']
-
-        # Split data into features (X) and target (y)
-        X = group_df[['word_total', 'spam_count', 'spam_auto', 'bigram_proportion']]
-        y = group_df['spamminess']
-
-        # Split the data into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-        # Initialize the selected model
-        if selected_model == 'SVM':
-            model = SVC()
-        elif selected_model == 'Random Forest':
-            model = RandomForestClassifier()
-        elif selected_model == 'Naive Bayes':
-            model = MultinomialNB()
-        elif selected_model == 'KNN':
-            model = KNeighborsClassifier()
-        # Add other models as needed
-
-        # Train the model
-        model.fit(X_train, y_train)
-
-        # Evaluate the model
-        y_pred = model.predict(X_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        report = classification_report(y_test, y_pred)
-
-        # Save the trained model
-        if selected_model == 'SVM':
-            svm_model = model
-        elif selected_model == 'Random Forest':
-            rf_model = model
-        elif selected_model == 'Naive Bayes':
-            nb_model = model
-        elif selected_model == 'KNN':
-            knn_model = model
-        # Add other models as needed
-
-        print(f"Model: {selected_model}")
-        print(f"Accuracy: {accuracy}")
-        print(f"Classification Report:\n{report}")
-
-    else:
-        print("No dataset loaded. Please load a dataset first.")
 
 
 def classify_messages():
-    global df
-    global selected_group 
-    global selected_model
+    global df, selected_group, selected_model
 
     if df is not None:
+        selected_group = group_var.get()
         selected_model = model_var.get()  # Declare selected_model as a global variable
 
         df['word_total'] = 0
@@ -274,8 +210,20 @@ def classify_messages():
                     if count > 1:
                         spam_bigrams.add(''.join(bigram))
             df.at[index, 'spam_bigrams'] = ', '.join(spam_bigrams)
+        
+        model_filename = f"{selected_model.lower().replace(' ', '')}_{selected_group.lower().replace(' ', '')}.pkl"
+        with open(f"D:/apl prods/model/{model_filename}", 'rb') as file:
+          model = pickle.load(file)
+        X = df[['word_total', 'spam_count', 'spam_auto', 'bigram_proportion']]
+        df['predicted_spam'] = model.predict(X)
         print(df)
-        train_model(selected_group, selected_model)
+        # Filter the DataFrame to display only rows where predicted_spam is 1
+        df_predicted_spam = df[df['predicted_spam'] == '1']
+        print(df_predicted_spam)
+
+        # Display the new DataFrame in a table
+        display_dataframe(df_predicted_spam)
+        
 
     else:
         print("No dataset loaded. Please load a dataset first.")
