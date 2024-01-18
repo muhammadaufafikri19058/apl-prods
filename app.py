@@ -33,6 +33,8 @@ def load_and_display_dataset(file_path=None, chat_text=None):
     global df,now_count,classify_count
     now_count=classify_count
     if file_path:
+         # Remove curly braces from the file path
+        file_path = file_path.strip('{}')
         try:
             with open(file_path, encoding='utf-8') as f:
                 WhatsApp_chat_data = f.read().split('\n')
